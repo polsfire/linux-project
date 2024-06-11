@@ -1,0 +1,18 @@
+
+Bonjour cher client ! \n
+notre application vous sert a supprimer vos fichiers d'une maniere securisee \n \n
+
+1- Au premier lieu ,vous  trouvez le menu ,dont vous choisissez un service en appuyant sur \n
+   l'un de ces  :  \n \n 
+
+
+  • -c : compresser le fichier \n
+  • -d : déplacer le fichier \n
+  • -t : supprimer ancien fichier \n
+  • -h: help \n
+  • -g: Pour afficher un menu textuel et gérer les fonctionnalité de façon \n
+    graphique(Utilisation de YAD).\n
+  • -v: Pour afficher le nom des auteurs et version du code. \n
+  • -m : pour afficher un menu textuel (en boucle) qui permet d’accédé à chaque fonction"\n
+
+2-Apres choisir l'une de ces options 

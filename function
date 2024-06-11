@@ -1,0 +1,185 @@
+supprime_permanante(){
+nbligne=`wc -l datedecreation`#recupereer le nombre totatale de fichier compresser
+nbligne=${nbligne%%datedecreation} #recupereer seulement le nombre totatale de fichier compresser
+b=1;
+for i in `seq 1 $nbligne `#parcour sur les fichier compresser
+do
+ligne=`sed -n "$i P" datedecreation`#recuperer la premier ligne de fichier datedecreation qui contient les infos de $i fichier compresser
+fichier=${ligne#|}#
+fichier=${fichier%%|*""}#
+#recuperer seulement le nom de fichier a tester
+date=${ligne##|*|}#
+date=${date:3:13}#
+#recuperer la date de creation de fichier a tester
+OLDEST_DATE=`date -d "$date" '+%Y-%m-%d'`;#reformer la date recuperer sous la forme +%Y-%m-%d
+current="$(date '+%s')";#nconvertie date mta3 tawa en seconde
+OLDEST_DATE="$(date -d "$OLDEST_DATE" '+%s')";#nconvertie date l9dima en seconde
+diff_days=$(( ("$current" - "$OLDEST_DATE") / (3600 * 24) ));#na3mel deff bech net7asel 3la resultat b seconde mba3ed n7awel l nombre de jour
+if [ $diff_days -ge 2 ]
+then 
+`rm  ./trash/$fichier`;#si nombre de jour>2d>48h alors nsupprimer lfichier eli 3malt 3leeh controle 
+`sed "$i s/$ligne/-/" datedecreation > temp`;#remplacer la chaine qui contient les info de fichier a supprimer par un caractere et deplacer le resultat dans le fichier temp
+echo `cat temp > ./datedecreation`#recuperer les donnes de temp dans le fichier datedecreation
+fi
+done
+`grep -v "-" temp>datedecreation`#recuperer ml fichier temp les lignes qui ne contient pas le caracter -
+}
+
+compresser_fichier(){
+
+`gzip -k $1` #compresser le fichier $1
+`mv $1.gz ./trash/` #deplacer le fichier $1 dans trash
+now=$(date)#nom=date actuelle
+format="|$1.gz|$now" #cree une ligne sous la forme |nomdeficher.gz|date actuelle
+`echo  $format>>datedecreation` #ecrire le format dans la derniere ligne de fichier date de ccreation
+}
+
+verifie_comp(){  
+resultdecompadrison=`diff -s $1 ./testdecompression/$2`;#nchoof esque les deux fichiers possedent le meme contenu ou pas
+extract=${resultdecompadrison:(-10)};#extraire les 10 dernier caratere de resultdecompadrison
+if [ "identiques" = "$extract" ]
+then 
+resultdecompadrison=1;
+echo "ce fichier est deja compressé";
+else
+resultdecompadrison=0;
+fi}
+
+uncompresser_fichier(){
+`gunzip -k ./trash/$1  `;#unzip file nommé $1 dans le fichier trash
+nomdefichiercompresser=$1;
+nomdeficherdecompresser=${nomdefichiercompresser%".gz"};#na7ki .gz mel fichier eli 3matlo unzip bech na3ref nom fichier decompresser
+echo `mv ./trash/$nomdeficherdecompresser ./testdecompression`;#nhezo l fichier decompresser lel testdecompression eli bech na3mel 3leeh mes controle
+}
+
+auto_comp(){
+nbligne=`wc -l datedecreation` #recuperer le nombre de fichier compresser
+nbligne=${nbligne%%datedecreation};#pour redcuperer seulement le nomdbre de ligne de fichier compresser
+resultdecompadrison=0;#inisialiser la variable resultdecompadrison a 0
+i=1; #inisialiser mon compteur a 1
+
+while ([ "$i" -le "$nbligne"  ] && [ "$resultdecompadrison" != "1" ]) #tanque ena ma3maltech mes control 3la tout les fichier  w mal9it wela wa7ed mel fichier compresser==lel fichier eli da5ilholi 
+do
+ligne=`sed -n "$i P" datedecreation` #recuperer la premier ligne de fichier datedecreation qui contient les infos de $i fichier compresser
+fichier=${ligne#|}#
+fichier=${fichier%%|*""}#
+#recuperer seulement le nom de fichier a tester
+uncompresser_fichier $fichier;#decompresser le fichier compresser
+verifie_comp $1 $nomdeficherdecompresser ;#verief si le fichier decompresser et le fichier eli da5elholi kifkif fil contenu wala lé
+`rm ./testdecompression/$nomdeficherdecompresser`#supprimer le fichier temporaire de fichier decompresser
+i=$(( $i + 1 ));#incrementer mon conteur pour passer a la deuxieme ligne
+done
+#apres le parcour
+if [ "$resultdecompadrison" -eq "0" ] #ith 5raj mel boucle w mal9a 7ata wa7ed kifo
+then 
+compresser_fichier $1;#alors ncompressih
+fi
+}
+
+
+version_code(){
+sudo debugfs -R  'stat <1057965>' /dev/sda5 >creationdate #1057965 correspond a l inode de fichier | a travers ce code la on recupere un code qui contient la date de creation de notre code apres en envoie les donnes dans le fichier creationdate
+date=`cat creationdate` #recuperer les donnes enregistrer dans le fichier creationdate
+date=${date##Inode*"--"} #
+date=${date##"Size"%%"EXTENTS"}#
+#extraire la chaine qui contient la date de creation
+echo "la version du code est :${date:0:23}"
+echo "le nom d auteurs est : `stat -c "%U" sdel.sh ` "
+}
+calcul_arg()
+{
+if [ "$1" -eq "0" ] 
+then 
+erreurs="nombre d'arguments est $1 : le programme a echoue   !" ;
+echo $erreurs;
+show_usage
+return `echo $erreurs >>erreur`
+fi
+}
+
+
+
+
+
+
+HELP(){
+echo -e  ` cat help` ;
+}
+show_usage()
+{ 
+echo  "sdel.sh: [-h] [-m] [-t] [-c] [-g] [-d] [-m] [-v] chemin.."
+}
+deplacer(){
+`mv $1 $2`
+}
+#---------------yad
+
+yaddd(){
+test=10;
+while [ $test -ne 6 ] 
+do 
+action=$(yad --width 600 --height 300 --title "projet 3" \
+    --button="gtk-close:1" \
+    --button="compresser:2" \
+    --button="Déplacer:3" \
+    --button="Supprimer:4" \
+    --button="Help:5" \
+    --button="Version:6" \
+    "Power Off" "Reboot" "Suspend" "Logout")
+test=$?
+
+[[ $test -eq 1 ]] && exit 0
+
+
+
+case $test  in
+2) 
+read -p "Donner le chemin vers le fichier a compresser :  " nom
+
+auto_comp $nom;;
+
+3) read -p "Donner le chemin de fichier a deplacer :  " pwdd 
+read -p "Donner le chemin vers ou voudrez vous deplacer le fichier " versd 
+deplacer $pwdd $versd;;
+
+4) supprime_permanante;;
+5) HELP;;
+
+6)version_code ;;
+*) echo "Choix incorrect" ;;
+esac
+
+done
+}
+
+#---------------yad
+
+#ppp------------------------------------------------- boucle
+menu_textuel(){
+PS3="Votre choix : » "
+select item in "- compresser -" "- Déplacer -" "- Supprimer ancien fichier -" "- Pour afficher le help détaillé à partir d’un fichier texte-" "- Pour afficher un menu textuel et gérer les fonctionnalité de façon graphique-" "- Pour afficher le nom des auteurs et version du code.-" 
+do
+echo "Vous avez choisi l'item $REPLY : $item" 
+case $REPLY in 
+1) 
+read -p "Donner le chemin vers le fichier a compresser :  " nom
+auto_comp $nom ;;
+
+2) read -p "Donner le chemin de fichier a deplacer :  " pwdd 
+read -p "Donner le chemin vers ou voudrez vous deplacer le fichier " versd 
+deplacer $pwdd $versd;;
+
+3) supprime_permanante;;
+4) HELP ;;
+5) yaddd;;
+6)version_code ;;
+*) echo "Choix incorrect" ;;
+esac
+done
+}
+
+
+
+#ppp------------------------------------------------- menu textuelle(boucle)
+
+
